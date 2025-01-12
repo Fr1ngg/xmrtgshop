@@ -1,0 +1,4 @@
+aiogram==2.25.1
+requests==2.31.0
+SQLAlchemy==1.4.46
+sqlalchemy[asyncio]==1.4.46
