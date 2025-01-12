@@ -1,18 +1,46 @@
-from aiogram import Bot, Dispatcher
-from aiogram.filters import Command
 import logging
+import os
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import ParseMode
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.utils import executor
+from dotenv import load_dotenv
 
-API_TOKEN = '8069011753:AAFhydbTVyUUCij4sEbVtOZZl2zttQE1tew'
+# Загружаем переменные из .env файла
+load_dotenv()
 
+# Получаем токен из переменной окружения
+API_TOKEN = os.getenv('API_TOKEN')
+
+# Проверка, если токен не найден
+if not API_TOKEN:
+    raise ValueError("API_TOKEN не найден! Проверьте переменную окружения или .env файл.")
+
+# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
+# Создание бота и диспетчера
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-@dp.message_handler(Command("start"))
-async def cmd_start(message):
-    await message.answer("Hello! I'm your bot.")
+# Включаем логирование middleware
+dp.middleware.setup(LoggingMiddleware())
 
-# Заменяем executor.start_polling() на dp.run_polling()
+# Команда /start
+@dp.message_handler(commands=['start'])
+async def cmd_start(message: types.Message):
+    await message.answer("Привет! Я твой бот.")
+
+# Команда /help
+@dp.message_handler(commands=['help'])
+async def cmd_help(message: types.Message):
+    await message.answer("Список доступных команд: /start, /help")
+
+# Обработчик сообщений
+@dp.message_handler()
+async def echo(message: types.Message):
+    await message.answer(message.text)
+
+# Запуск бота
 if __name__ == '__main__':
-    dp.run_polling()
+    executor.start_polling(dp, skip_updates=True)
