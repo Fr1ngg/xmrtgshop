@@ -1,11 +1,11 @@
 import os
 
-# Конфигурация бота
-BOT_TOKEN = os.getenv("BOT_TOKEN")  # Telegram Bot API токен
+# Telegram Bot API Token
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Monero RPC
+# Monero RPC Settings
 MONERO_RPC_URL = os.getenv("MONERO_RPC_URL", "http://remote-node:18089/json_rpc")
 MONERO_WALLET_PASSWORD = os.getenv("MONERO_WALLET_PASSWORD", "your_wallet_password")
 
-# База данных
+# Database URL
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///database.db")
