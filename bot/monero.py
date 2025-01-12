@@ -1,17 +1,18 @@
 import requests
-from bot.config import MONERO_RPC_URL, MONERO_WALLET_PASSWORD
+from bot.config import MONERO_RPC_URL, MONERO_RPC_LOGIN, MONERO_WALLET_PASSWORD
 
 
 def call_rpc(method, params=None):
-    """Generic RPC call to Monero."""
+    """Generic RPC call to Monero with authentication."""
     headers = {"Content-Type": "application/json"}
+    auth = tuple(MONERO_RPC_LOGIN.split(":"))  # ('user', 'password')
     payload = {
         "jsonrpc": "2.0",
         "id": "0",
         "method": method,
         "params": params or {}
     }
-    response = requests.post(MONERO_RPC_URL, json=payload, headers=headers)
+    response = requests.post(MONERO_RPC_URL, json=payload, headers=headers, auth=auth)
     response.raise_for_status()
     return response.json().get("result")
 
