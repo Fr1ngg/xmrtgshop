@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    environment:
+      - BOT_TOKEN=<your_telegram_bot_token>
+      - MONERO_RPC_URL=http://node.moneroworld.com:18089/json_rpc
+      - MONERO_WALLET_PASSWORD=<your_wallet_password>
+      - DATABASE_URL=sqlite+aiosqlite:///database.db
+    volumes:
+      - ./database:/app/database
+    command: python -m bot.main
