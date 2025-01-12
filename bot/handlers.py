@@ -1,32 +1,42 @@
 from aiogram import Dispatcher, types
-from bot.monero import create_address, get_balance, get_transfers
-from bot.models import User, async_session
 from sqlalchemy.future import select
+from bot.models import async_session, Category, Product
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-async def start_command(message: types.Message):
+
+async def show_categories(message: types.Message):
+    """Show categories to the user."""
     async with async_session() as session:
-        user = await session.execute(select(User).where(User.telegram_id == message.from_user.id))
-        user = user.scalar_one_or_none()
+        result = await session.execute(select(Category))
+        categories = result.scalars().all()
 
-        if not user:
-            address = create_address(str(message.from_user.id))
-            new_user = User(
-                telegram_id=message.from_user.id,
-                username=message.from_user.username or "Unknown",
-                monero_address=address,
-            )
-            session.add(new_user)
-            await session.commit()
-            await message.answer(f"Добро пожаловать! Ваш Monero-адрес: {address}")
-        else:
-            await message.answer("Вы уже зарегистрированы!")
+        if not categories:
+            await message.answer("Каталог пуст.")
+            return
 
-async def balance_command(message: types.Message):
+        buttons = [InlineKeyboardButton(text=cat.name, callback_data=f"category_{cat.id}") for cat in categories]
+        keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        await message.answer("Выберите категорию:", reply_markup=keyboard)
+
+
+async def show_products(callback_query: types.CallbackQuery):
+    """Show products in a category."""
+    category_id = callback_query.data.split("_")[1]
     async with async_session() as session:
-        user = await session.execute(select(User).where(User.telegram_id == message.from_user.id))
-        user = user.scalar_one_or_none()
-        if user:
-            balance = get_balance(user.monero_address)
-            await message.answer(f"Ваш баланс: {balance:.12f} XMR")
-        else:
-            await message.answer("Вы не зарегистрированы!")
+        result = await session.execute(select(Product).where(Product.category_id == category_id))
+        products = result.scalars().all()
+
+        if not products:
+            await callback_query.message.answer("В этой категории пока нет товаров.")
+            return
+
+        for product in products:
+            text = f"**{product.name}**\nЦена: {product.price} XMR"
+            photo = product.photo or None
+            await callback_query.message.answer_photo(photo, caption=text) if photo else \
+                await callback_query.message.answer(text)
+
+
+def register_user_handlers(dp: Dispatcher):
+    dp.register_message_handler(show_categories, commands=["catalog"])
+    dp.register_callback_query_handler(show_products, lambda c: c.data.startswith("category_"))
