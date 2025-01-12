@@ -2,7 +2,7 @@
  - В разработке!
 
 
-Установка Docker: Выполните следующие команды для установки Docker на сервере Ubuntu 22:
+Установка Docker: Выполните следующие команды для установки Docker:
 
 sudo apt update
 sudo apt install -y apt-transport-https ca-certificates curl software-properties-common
