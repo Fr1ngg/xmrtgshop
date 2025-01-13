@@ -3,7 +3,7 @@ from sqlalchemy.future import select
 from bot.models import async_session, Category
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-ADMIN_IDS = [123456789]  # ID администраторов
+ADMIN_IDS = []  # ID администраторов
 
 
 async def admin_menu(message: types.Message):
